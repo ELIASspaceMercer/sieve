@@ -58,15 +58,20 @@ def required_str(obj, key, label, errors):
     return value.strip()
 
 
+def optional_str(obj, key, label, errors):
+    if key in obj:
+        required_str(obj, key, label, errors)
+
+
 def date_str(obj, key, label, errors, required=True):
     value = obj.get(key)
-    if (value is None or value == "") and not required:
+    if key not in obj and not required:
         return None
     value = required_str(obj, key, label, errors)
     if not value:
         return None
     try:
-        if len(value) != 10:
+        if len(value) != 10 or obj[key] != value:
             raise ValueError("not canonical")
         parsed = dt.date.fromisoformat(value)
         if parsed.isoformat() != value:
@@ -79,7 +84,7 @@ def date_str(obj, key, label, errors, required=True):
 
 def choice(obj, key, allowed, label, errors):
     value = required_str(obj, key, label, errors)
-    if value and value not in allowed:
+    if value and (value not in allowed or obj[key] != value):
         errors.append(f"{label}.{key}: expected one of {', '.join(sorted(allowed))}")
     return value
 
@@ -148,6 +153,7 @@ def evaluate(report, today):
         state = choice(item, "status", {"passed", "failed", "not_run"}, label, errors)
         if state != "passed":
             holds.append(f"{label}: scripted check did not pass")
+        optional_str(item, "evidence_ref", label, errors)
         if state == "passed":
             required_str(item, "evidence_ref", label, errors)
             checked = date_str(item, "checked_on", label, errors)
@@ -167,13 +173,16 @@ def evaluate(report, today):
         required_str(item, "statement", label, errors)
         required_str(item, "source_ref", label, errors)
         state = choice(item, "status", {"verified", "unverified"}, label, errors)
+        optional_str(item, "evidence_ref", label, errors)
         if state == "unverified":
+            date_str(item, "checked_on", label, errors, required=False)
             holds.append(f"{label}: claim unverified")
         elif state == "verified":
             required_str(item, "evidence_ref", label, errors)
             checked = date_str(item, "checked_on", label, errors)
             if checked and checked > today:
                 holds.append(f"{label}: verification date is in the future")
+    claim_ids = ids.copy()
     required_str(inspect, "verification_surface_ref", "inspect", errors)
 
     keep = require_obj(root.get("keep_accountable"), "keep_accountable", errors)
@@ -195,12 +204,14 @@ def evaluate(report, today):
         seen_roles.add(role)
         people[role] = required_str(item, "reviewer", label, errors)
         decision = choice(item, "decision", {"pending", "approved", "rejected"}, label, errors)
+        optional_str(item, "evidence_ref", label, errors)
         if decision == "approved":
             required_str(item, "evidence_ref", label, errors)
             checked = date_str(item, "reviewed_on", label, errors)
             if checked and checked > today:
                 holds.append(f"{label}: review is dated in the future")
         elif decision == "rejected":
+            date_str(item, "reviewed_on", label, errors, required=False)
             holds.append(f"{label}: review rejected")
         else:
             holds.append(f"{label}: human review pending")
@@ -223,6 +234,8 @@ def evaluate(report, today):
         expiry = date_str(item, "expiry_on", label, errors, required=state != "resolved")
         if state == "open":
             holds.append(f"{label}: unresolved open item")
+        optional_str(item, "decision_ref", label, errors)
+        optional_str(item, "accepted_by", label, errors)
         if state == "accepted":
             required_str(item, "decision_ref", label, errors)
             required_str(item, "accepted_by", label, errors)
@@ -238,7 +251,9 @@ def evaluate(report, today):
         item = require_obj(value, label, errors)
         only_keys(item, {"id", "claim_ref", "checked_on", "recheck_by", "owner", "status", "schedule_ref"}, label, errors)
         unique_id(item, ids, label, errors)
-        required_str(item, "claim_ref", label, errors)
+        claim_ref = required_str(item, "claim_ref", label, errors)
+        if claim_ref and claim_ref not in claim_ids:
+            errors.append(f"{label}.claim_ref: unknown claim id {claim_ref!r}")
         required_str(item, "owner", label, errors)
         required_str(item, "schedule_ref", label, errors)
         state = choice(item, "status", {"current", "changed", "withdrawn"}, label, errors)

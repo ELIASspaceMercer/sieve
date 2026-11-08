@@ -187,6 +187,64 @@ class AikoTests(unittest.TestCase):
         self.assertEqual(gate.returncode, 1, gate.stdout + gate.stderr)
         self.assertIn("BLOCKED", gate.stdout)
 
+    def test_optional_fields_validate_when_present(self):
+        cases = [
+            (("artefact",), "use_on", ""),
+            (("artefact",), "use_on", None),
+            (("artefact",), "use_on", " 2026-11-20 "),
+            (("inspect", "claims", 0), "checked_on", "not-a-date"),
+            (("inspect", "claims", 0), "evidence_ref", {}),
+            (("inspect", "automated_checks", 0), "evidence_ref", ""),
+            (("keep_accountable", "human_reviews", 0), "reviewed_on", "not-a-date"),
+            (("keep_accountable", "human_reviews", 0), "evidence_ref", None),
+            (("keep_accountable", "open_items", 0), "decision_ref", []),
+            (("keep_accountable", "open_items", 0), "accepted_by", 42),
+        ]
+        for path, key, value in cases:
+            with self.subTest(path=path, key=key, value=value):
+                report = approved_fixture()
+                report["inspect"]["claims"][0]["status"] = "unverified"
+                report["inspect"]["automated_checks"][0]["status"] = "not_run"
+                report["keep_accountable"]["human_reviews"][0]["decision"] = "rejected"
+                report["keep_accountable"]["open_items"] = [{
+                    "id": "resolved", "description": "Fixed", "owner": "owner", "status": "resolved"}]
+                item = report
+                for segment in path:
+                    item = item[segment]
+                item[key] = value
+                self.assertEqual(self.check(report)[2], "INVALID")
+
+    def test_optional_fields_can_be_omitted(self):
+        report = approved_fixture()
+        del report["artefact"]["use_on"]
+        report["keep_accountable"]["open_items"] = [{
+            "id": "resolved", "description": "Fixed", "owner": "owner", "status": "resolved"}]
+        self.assertEqual(self.check(report)[2], "REPORTED_APPROVED")
+
+    def test_enum_whitespace_is_invalid(self):
+        report = approved_fixture()
+        report["keep_accountable"]["human_reviews"][0]["decision"] = " approved "
+        self.assertEqual(self.check(report)[2], "INVALID")
+
+    def test_observation_must_reference_a_report_claim(self):
+        report = approved_fixture()
+        report["observe"]["verifications"][0]["claim_ref"] = "missing-claim"
+        errors, _, state = self.check(report)
+        self.assertEqual(state, "INVALID")
+        self.assertTrue(any("unknown claim id" in error for error in errors))
+
+    def test_invalid_reference_cannot_pass_cli_gate(self):
+        import tempfile
+        report = approved_fixture()
+        report["observe"]["verifications"][0]["claim_ref"] = "missing-claim"
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "report.json"
+            path.write_text(json.dumps(report))
+            result = subprocess.run([sys.executable, str(SCRIPT), str(path),
+                "--today", "2026-11-07", "--output", "json"], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertFalse(json.loads(result.stdout)["release_gate_passed"])
+
     def test_schema_json_parses(self):
         schema = json.loads((ROOT / "schemas" / "aiko-report.schema.json").read_text())
         self.assertEqual(schema["properties"]["schema_version"]["const"], "0.1.0")
