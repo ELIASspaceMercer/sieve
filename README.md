@@ -35,6 +35,29 @@ And the corollary that costs the most to learn: **a low acceptance rate is a def
 
 Then use the one-page [`CHECKLIST.md`](CHECKLIST.md) on every loop and every week.
 
+## AIKO — SIEVE Report (experimental)
+
+**A**ssess · **I**nspect · **K**eep accountable · **O**bserve turns the
+DAHNIN loop's evidence into one human-reviewable SIEVE report. It is a
+reporting and hold-only extension, **not** a third set of SIEVE laws.
+
+```sh
+cp templates/aiko-report.json aiko-report.json
+# Complete the report using real evidence and human review records.
+python3 scripts/check_aiko.py aiko-report.json --mode lint
+python3 scripts/check_aiko.py aiko-report.json --mode gate
+python3 scripts/check_aiko.py aiko-report.json --mode gate --output markdown > AIKO-REPORT.md
+```
+
+- [`docs/AIKO.md`](docs/AIKO.md): process, mapping to SIEVE, limitations, and adoption.
+- [`schemas/aiko-report.schema.json`](schemas/aiko-report.schema.json): machine-readable report shape.
+- [`scripts/check_aiko.py`](scripts/check_aiko.py): standard-library validator; nonzero on missing, failed, or expired gates.
+- [`templates/aiko-report.json`](templates/aiko-report.json): explicit pending-review starter template.
+
+An AI-generated report **cannot authenticate its own evidence or human approval**.
+Use protected branches, identity-backed review and trusted CI to enforce that
+separately. Passing `--mode lint` is never release permission.
+
 ## What is in this repository
 
 ```
@@ -46,10 +69,16 @@ templates/
   review-budget.md               S · Size, the commission number
   artefact-header.md             I · Instrument, claims, sources, gaps, dates
   recheck-schedule.yml           E · Expire, the schedule a job reads
+  aiko-report.json               AIKO starter report (pending, not approved)
 scripts/
   check_rechecks.py              Fails when a re-check is due, so it can hold a publish
+  check_aiko.py                  Validates SIEVE Report metadata and holds by default
 .github/workflows/
   recheck.yml                    Runs the check daily and before publishing
+  aiko.yml                       Runs AIKO lint and unit tests (not a publish gate)
+docs/AIKO.md                      AIKO protocol and adoption guide
+schemas/aiko-report.schema.json  Report JSON Schema v0.1.0
+tests/test_aiko.py               AIKO hold/expiry/escalation tests
 CHANGELOG.md
 LICENSE
 ```
