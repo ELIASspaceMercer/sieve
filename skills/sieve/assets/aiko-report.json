@@ -1,0 +1,48 @@
+{
+  "schema_version": "0.1.0",
+  "report_id": "replace-with-unique-report-id",
+  "created_on": "2026-11-07",
+  "artefact": {
+    "id": "replace-with-artefact-id",
+    "revision": "replace-with-commit-or-version",
+    "location": "path/to/artefact",
+    "type": "software",
+    "diff_ref": "path/to/reviewable-diff",
+    "use_on": "2026-11-30"
+  },
+  "assess": {
+    "context_ref": "path/to/context-document.md",
+    "source_of_truth": ["path/to/authoritative-spec.md"],
+    "data_classification": "internal",
+    "trust_boundaries": "Describe data flows, permitted scope, and boundaries here.",
+    "review_class": "reversible_private",
+    "risk_flags": [],
+    "review_budget_minutes": 30
+  },
+  "inspect": {
+    "automated_checks": [],
+    "claims": [
+      {
+        "id": "claim-1",
+        "statement": "Describe a single checkable claim.",
+        "source_ref": "path/to/authoritative-spec.md#section",
+        "status": "unverified"
+      }
+    ],
+    "verification_surface_ref": "path/to/review-surface.md"
+  },
+  "keep_accountable": {
+    "owner": "replace-with-named-owner",
+    "human_reviews": [
+      {
+        "role": "primary",
+        "reviewer": "replace-with-human-reviewer",
+        "decision": "pending"
+      }
+    ],
+    "open_items": []
+  },
+  "observe": {
+    "verifications": []
+  }
+}

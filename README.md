@@ -58,6 +58,29 @@ An AI-generated report **cannot authenticate its own evidence or human approval*
 Use protected branches, identity-backed review and trusted CI to enforce that
 separately. Passing `--mode lint` is never release permission.
 
+## Use SIEVE with your AI assistant
+
+The portable [SIEVE skill](skills/sieve/SKILL.md) guides an assistant through a
+bounded DAHNIN loop and an AIKO evidence report, with human approval kept separate.
+It includes a Markdown report template, the JSON starter and three complete
+synthetic examples (pending review, declared conditions met and expired evidence).
+
+- **Skill-capable assistants:** copy the complete `skills/sieve/` folder into the
+  skill location supported by your assistant. Preserve its subfolders.
+- **Plain chat:** paste `skills/sieve/SKILL.md`, attach the relevant template and
+  reference guide, and describe your task. If attachments are unavailable, paste
+  their text. No provider-specific API or automatic tool access is required.
+- **Optional validation:** use this repository's Python validator when your
+  environment can execute it. The portable skill itself contains instructions
+  and examples, not a bundled runtime. Without tools, it reports checks as not run.
+
+Example request: “Use SIEVE to review this draft. Prepare an AIKO report, identify
+unsupported claims and keep human approval pending. Do not publish it.”
+
+Native skill discovery and installation differ by assistant; compatibility with
+all products or model behavior is not guaranteed. The instructions and Markdown
+workflow can be used independently of native skill support.
+
 ## What is in this repository
 
 ```
