@@ -56,6 +56,16 @@ The four `review_class` values correspond to the review classes in SIEVE Part 2:
 `legally_or_contractually_operative`. Additional `risk_flags` are
 `authentication`, `payments`, `personal_data`, `other`.
 
+Optional fields may be omitted; when present they must satisfy the schema,
+including dates and evidence references on pending or rejected entries. Empty
+strings and null are not substitutes for an omitted date. Dates and enum values
+must not have surrounding whitespace.
+
+Each `observe.verifications[].claim_ref` names an `inspect.claims[].id` in the
+same report (compared after trimming identifier whitespace). External sources
+belong in the claim's `source_ref`; a dangling internal reference is invalid.
+This verifies the link, not whether every perishable claim has been scheduled.
+
 ## Use
 
 ```sh
