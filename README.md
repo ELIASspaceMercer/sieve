@@ -65,7 +65,12 @@ bounded DAHNIN loop and an AIKO evidence report, with human approval kept separa
 It includes a Markdown report template, the JSON starter and three complete
 synthetic examples (pending review, declared conditions met and expired evidence).
 
-- **Skill-capable assistants:** copy the complete `skills/sieve/` folder into the
+- **Download:** open [Releases](https://github.com/true-altruist/sieve/releases)
+  and download `sieve-skill-<tag>.zip` from the release assets, then extract it.
+  Use this dedicated ZIP rather than GitHub's full source-code archive. The
+  first download will appear after a release containing the distribution
+  workflow is published and its workflow succeeds.
+- **Skill-capable assistants:** copy the extracted `sieve/` folder (or the complete `skills/sieve/` folder from source) into the
   skill location supported by your assistant. Preserve its subfolders.
 - **Plain chat:** paste `skills/sieve/SKILL.md`, attach the relevant template and
   reference guide, and describe your task. If attachments are unavailable, paste
@@ -80,6 +85,34 @@ unsupported claims and keep human approval pending. Do not publish it.”
 Native skill discovery and installation differ by assistant; compatibility with
 all products or model behavior is not guaranteed. The instructions and Markdown
 workflow can be used independently of native skill support.
+
+### Building and releasing the skill
+
+From a local checkout of the desired release commit:
+
+```sh
+python3 scripts/package_skill.py --version v1.0.0 --output dist
+```
+
+This creates `sieve-skill-v1.0.0.zip` and its `.zip.sha256` checksum. The ZIP
+contains a single `sieve/` folder with its instructions, licence, templates and
+examples. It packages **committed files at HEAD**, excluding local edits and
+untracked files. Use the actual release tag in place of `v1.0.0`.
+
+After this workflow is merged, publishing a GitHub Release (including a
+prerelease) runs tests, packages the tagged revision and attaches both files.
+It does not create tags or releases. Tags must point to a commit containing the
+skill and packaging script. Check the **Distribute SIEVE skill** workflow before
+announcing the download; failed tests or uploads leave assets unavailable.
+
+Existing assets are not overwritten: reruns fail on duplicate filenames. For a
+corrected package, publish a new version. If GitHub immutable releases are
+enabled, build locally and attach the ZIP and checksum to the **draft** before
+publishing; the post-publication upload workflow is intended for mutable releases.
+
+To check download integrity, run `sha256sum -c sieve-skill-v1.0.0.zip.sha256`
+(or `shasum -a 256 -c sieve-skill-v1.0.0.zip.sha256` on macOS) beside the ZIP.
+A matching checksum checks file integrity, not the trustworthiness of its source.
 
 ## What is in this repository
 
