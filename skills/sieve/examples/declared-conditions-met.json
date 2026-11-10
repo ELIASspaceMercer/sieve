@@ -1,0 +1,72 @@
+{
+  "schema_version": "0.1.0",
+  "report_id": "synthetic-declared-conditions-met",
+  "created_on": "2026-11-06",
+  "artefact": {
+    "id": "example",
+    "revision": "test-sha",
+    "location": "examples/example.md",
+    "type": "document",
+    "diff_ref": "synthetic://diff",
+    "use_on": "2026-11-20"
+  },
+  "assess": {
+    "context_ref": "examples/context.md",
+    "source_of_truth": [
+      "examples/spec.md"
+    ],
+    "data_classification": "public",
+    "trust_boundaries": "Synthetic fixture only",
+    "review_class": "reversible_private",
+    "risk_flags": [],
+    "review_budget_minutes": 15
+  },
+  "inspect": {
+    "automated_checks": [
+      {
+        "id": "unit-tests",
+        "tool": "unittest",
+        "status": "passed",
+        "checked_on": "2026-11-06",
+        "evidence_ref": "synthetic://unit-test-log"
+      }
+    ],
+    "claims": [
+      {
+        "id": "claim-1",
+        "statement": "Fixture result",
+        "source_ref": "synthetic://spec",
+        "status": "verified",
+        "checked_on": "2026-11-06",
+        "evidence_ref": "synthetic://evidence"
+      }
+    ],
+    "verification_surface_ref": "synthetic://contact-sheet"
+  },
+  "keep_accountable": {
+    "owner": "synthetic-owner",
+    "human_reviews": [
+      {
+        "role": "primary",
+        "reviewer": "synthetic-reviewer-1",
+        "decision": "approved",
+        "reviewed_on": "2026-11-06",
+        "evidence_ref": "synthetic://human-review"
+      }
+    ],
+    "open_items": []
+  },
+  "observe": {
+    "verifications": [
+      {
+        "id": "check-1",
+        "claim_ref": "claim-1",
+        "checked_on": "2026-11-06",
+        "recheck_by": "2026-11-18",
+        "owner": "synthetic-owner",
+        "status": "current",
+        "schedule_ref": "synthetic://scheduled-job"
+      }
+    ]
+  }
+}
